@@ -1,62 +1,126 @@
 """
-Servicio para PruebaAntropometrica
-TODO: Implementar la lógica de negocio para PruebaAntropometrica
+Servicio API para Pruebas Antropométricas - Usando DAO
 """
+
+from basketball.controllers.prueba_antropometrica_controller import PruebaAntropometricaController
+from basketball.services.api_response import APIResponse
+from basketball.serializers import PruebaAntropometricaSerializer
 
 
 class PruebaAntropometricaService:
-    """Servicio para la lógica de negocio de PruebaAntropometrica"""
+    """Servicio para operaciones de Pruebas Antropométricas a través de API"""
     
-    def __init__(self):
-        # TODO: Inicializar DAO
-        pass
+    _controller = PruebaAntropometricaController()
     
-    def listar_pruebas(self, solo_activas: bool = True):
-        """Listar todas las pruebas antropométricas"""
-        # TODO: Implementar
-        pass
-    
-    def obtener_prueba(self, prueba_id: int):
-        """Obtener una prueba por ID"""
-        # TODO: Implementar
-        pass
-    
-    def crear_prueba(self, datos: dict):
+    @classmethod
+    def crear_prueba(cls, data: dict):
         """Crear una nueva prueba antropométrica"""
-        # TODO: Implementar validaciones y cálculo de IMC/índice córnico
-        pass
+        try:
+            prueba = cls._controller.crear_prueba(data)
+            serializer = PruebaAntropometricaSerializer(prueba)
+            return APIResponse.created(
+                data=serializer.data,
+                message="Prueba antropométrica creada exitosamente"
+            )
+        except Exception as e:
+            return APIResponse.error(
+                message="Error al crear prueba antropométrica",
+                errors=str(e)
+            )
     
-    def actualizar_prueba(self, prueba_id: int, datos: dict):
+    @classmethod
+    def obtener_prueba(cls, prueba_id: int):
+        """Obtener una prueba por ID"""
+        prueba = cls._controller.obtener_prueba(prueba_id)
+        if prueba:
+            serializer = PruebaAntropometricaSerializer(prueba)
+            return APIResponse.success(
+                data=serializer.data,
+                message="Prueba encontrada"
+            )
+        return APIResponse.not_found(
+            message="Prueba no encontrada",
+            resource=f"Prueba con ID {prueba_id}"
+        )
+    
+    @classmethod
+    def listar_pruebas(cls, activas_solo: bool = True):
+        """Listar todas las pruebas"""
+        pruebas = cls._controller.listar_pruebas(activas_solo)
+        serializer = PruebaAntropometricaSerializer(pruebas, many=True)
+        return APIResponse.success(
+            data=serializer.data,
+            message=f"Se encontraron {len(pruebas)} pruebas"
+        )
+    
+    @classmethod
+    def actualizar_prueba(cls, prueba_id: int, data: dict):
         """Actualizar una prueba"""
-        # TODO: Implementar validaciones y recálculo de índices
-        pass
+        prueba = cls._controller.actualizar_prueba(prueba_id, data)
+        if prueba:
+            serializer = PruebaAntropometricaSerializer(prueba)
+            return APIResponse.success(
+                data=serializer.data,
+                message="Prueba actualizada exitosamente"
+            )
+        return APIResponse.not_found(
+            message="Prueba no encontrada",
+            resource=f"Prueba con ID {prueba_id}"
+        )
     
-    def eliminar_prueba(self, prueba_id: int):
-        """Eliminar una prueba (soft delete)"""
-        # TODO: Implementar
-        pass
+    @classmethod
+    def eliminar_prueba(cls, prueba_id: int, soft_delete: bool = True):
+        """Eliminar una prueba"""
+        if cls._controller.eliminar_prueba(prueba_id, soft_delete):
+            return APIResponse.success(
+                message="Prueba eliminada exitosamente"
+            )
+        return APIResponse.not_found(
+            message="Prueba no encontrada",
+            resource=f"Prueba con ID {prueba_id}"
+        )
     
-    def obtener_pruebas_por_atleta(self, atleta_id: int):
+    @classmethod
+    def obtener_pruebas_atleta(cls, atleta_id: int):
         """Obtener pruebas de un atleta"""
-        # TODO: Implementar
-        pass
+        pruebas = cls._controller.obtener_pruebas_atleta(atleta_id)
+        serializer = PruebaAntropometricaSerializer(pruebas, many=True)
+        return APIResponse.success(
+            data=serializer.data,
+            message=f"Se encontraron {len(pruebas)} pruebas"
+        )
     
-    def obtener_ultima_prueba_atleta(self, atleta_id: int):
+    @classmethod
+    def obtener_ultima_prueba_atleta(cls, atleta_id: int):
         """Obtener la última prueba de un atleta"""
-        # TODO: Implementar
-        pass
+        prueba = cls._controller.obtener_ultima_prueba_atleta(atleta_id)
+        if prueba:
+            serializer = PruebaAntropometricaSerializer(prueba)
+            return APIResponse.success(
+                data=serializer.data,
+                message="Última prueba encontrada"
+            )
+        return APIResponse.not_found(
+            message="No se encontraron pruebas para este atleta"
+        )
     
-    def calcular_imc(self, peso: float, estatura: float) -> float:
-        """Calcular IMC"""
-        # TODO: Implementar
-        pass
+    @classmethod
+    def comparar_pruebas(cls, prueba_id_1: int, prueba_id_2: int):
+        """Comparar dos pruebas"""
+        resultado = cls._controller.comparar_pruebas(prueba_id_1, prueba_id_2)
+        if "error" in resultado:
+            return APIResponse.error(message=resultado["error"])
+        return APIResponse.success(
+            data=resultado,
+            message="Comparación realizada exitosamente"
+        )
     
-    def calcular_indice_cornico(self, altura_sentado: float, estatura: float) -> float:
-        """Calcular índice córnico"""
-        # TODO: Implementar
-        pass
-    
-    def obtener_estadisticas_atleta(self, atleta_id: int):
-        """Obtener estadísticas antropométricas de un atleta"""
-        # TODO: Implementar
-        pass
+    @classmethod
+    def buscar_pruebas(cls, criterios: dict):
+        """Buscar pruebas por criterios"""
+        pruebas = cls._controller.buscar_pruebas(criterios)
+        serializer = PruebaAntropometricaSerializer(pruebas, many=True)
+        return APIResponse.success(
+            data=serializer.data,
+            message=f"Se encontraron {len(pruebas)} pruebas"
+        )

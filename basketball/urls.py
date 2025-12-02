@@ -1,25 +1,28 @@
 """
 URLs del módulo Basketball
-TODO: Implementar las rutas de la API
 """
 
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
+from basketball.views import (
+    AtletaViewSet, GrupoAtletaViewSet, InscripcionViewSet,
+    PruebaAntropometricaViewSet, PruebaFisicaViewSet,
+    EntrenadorViewSet, EstudianteVinculacionViewSet
+)
+
+# Crear el router
+router = DefaultRouter()
+
+# Registrar los ViewSets
+router.register(r'atletas', AtletaViewSet, basename='atleta')
+router.register(r'grupos', GrupoAtletaViewSet, basename='grupo-atleta')
+router.register(r'inscripciones', InscripcionViewSet, basename='inscripcion')
+router.register(r'pruebas-antropometricas', PruebaAntropometricaViewSet, basename='prueba-antropometrica')
+router.register(r'pruebas-fisicas', PruebaFisicaViewSet, basename='prueba-fisica')
+router.register(r'entrenadores', EntrenadorViewSet, basename='entrenador')
+router.register(r'estudiantes-vinculacion', EstudianteVinculacionViewSet, basename='estudiante-vinculacion')
 
 urlpatterns = [
-    # TODO: Implementar rutas para cada recurso
-    # path('atletas/', ..., name='atletas-list'),
-    # path('atletas/<int:pk>/', ..., name='atletas-detail'),
-    # path('grupos/', ..., name='grupos-list'),
-    # path('grupos/<int:pk>/', ..., name='grupos-detail'),
-    # path('inscripciones/', ..., name='inscripciones-list'),
-    # path('inscripciones/<int:pk>/', ..., name='inscripciones-detail'),
-    # path('pruebas-antropometricas/', ..., name='pruebas-antropometricas-list'),
-    # path('pruebas-antropometricas/<int:pk>/', ..., name='pruebas-antropometricas-detail'),
-    # path('pruebas-fisicas/', ..., name='pruebas-fisicas-list'),
-    # path('pruebas-fisicas/<int:pk>/', ..., name='pruebas-fisicas-detail'),
-    # path('entrenadores/', ..., name='entrenadores-list'),
-    # path('entrenadores/<int:pk>/', ..., name='entrenadores-detail'),
-    # path('estudiantes-vinculacion/', ..., name='estudiantes-vinculacion-list'),
-    # path('estudiantes-vinculacion/<int:pk>/', ..., name='estudiantes-vinculacion-detail'),
+    path('', include(router.urls)),
 ]

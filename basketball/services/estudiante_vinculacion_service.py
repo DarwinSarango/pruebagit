@@ -1,47 +1,105 @@
 """
-Servicio para EstudianteVinculacion
-TODO: Implementar la lógica de negocio para EstudianteVinculacion
+Servicio API para Estudiantes de Vinculación - Usando DAO
 """
+
+from basketball.controllers.estudiante_vinculacion_controller import EstudianteVinculacionController
+from basketball.services.api_response import APIResponse
+from basketball.serializers import EstudianteVinculacionSerializer
 
 
 class EstudianteVinculacionService:
-    """Servicio para la lógica de negocio de EstudianteVinculacion"""
+    """Servicio para operaciones de Estudiantes de Vinculación a través de API"""
     
-    def __init__(self):
-        # TODO: Inicializar DAO
-        pass
+    _controller = EstudianteVinculacionController()
     
-    def listar_estudiantes(self):
-        """Listar todos los estudiantes de vinculación"""
-        # TODO: Implementar
-        pass
-    
-    def obtener_estudiante(self, estudiante_id: int):
-        """Obtener un estudiante por ID"""
-        # TODO: Implementar
-        pass
-    
-    def crear_estudiante(self, datos: dict):
+    @classmethod
+    def crear_estudiante(cls, data: dict):
         """Crear un nuevo estudiante de vinculación"""
-        # TODO: Implementar validaciones y lógica de negocio
-        pass
+        try:
+            estudiante = cls._controller.crear_estudiante(data)
+            serializer = EstudianteVinculacionSerializer(estudiante)
+            return APIResponse.created(
+                data=serializer.data,
+                message="Estudiante de vinculación creado exitosamente"
+            )
+        except Exception as e:
+            return APIResponse.error(
+                message="Error al crear estudiante de vinculación",
+                errors=str(e)
+            )
     
-    def actualizar_estudiante(self, estudiante_id: int, datos: dict):
+    @classmethod
+    def obtener_estudiante(cls, estudiante_id: int):
+        """Obtener un estudiante por ID"""
+        estudiante = cls._controller.obtener_estudiante(estudiante_id)
+        if estudiante:
+            serializer = EstudianteVinculacionSerializer(estudiante)
+            return APIResponse.success(
+                data=serializer.data,
+                message="Estudiante encontrado"
+            )
+        return APIResponse.not_found(
+            message="Estudiante no encontrado",
+            resource=f"Estudiante con ID {estudiante_id}"
+        )
+    
+    @classmethod
+    def obtener_estudiante_por_usuario(cls, usuario_id: int):
+        """Obtener un estudiante por ID de usuario"""
+        estudiante = cls._controller.obtener_estudiante_por_usuario(usuario_id)
+        if estudiante:
+            serializer = EstudianteVinculacionSerializer(estudiante)
+            return APIResponse.success(
+                data=serializer.data,
+                message="Estudiante encontrado"
+            )
+        return APIResponse.not_found(
+            message="Estudiante no encontrado para este usuario"
+        )
+    
+    @classmethod
+    def listar_estudiantes(cls):
+        """Listar todos los estudiantes"""
+        estudiantes = cls._controller.listar_estudiantes()
+        serializer = EstudianteVinculacionSerializer(estudiantes, many=True)
+        return APIResponse.success(
+            data=serializer.data,
+            message=f"Se encontraron {len(estudiantes)} estudiantes"
+        )
+    
+    @classmethod
+    def actualizar_estudiante(cls, estudiante_id: int, data: dict):
         """Actualizar un estudiante"""
-        # TODO: Implementar validaciones y lógica de negocio
-        pass
+        estudiante = cls._controller.actualizar_estudiante(estudiante_id, data)
+        if estudiante:
+            serializer = EstudianteVinculacionSerializer(estudiante)
+            return APIResponse.success(
+                data=serializer.data,
+                message="Estudiante actualizado exitosamente"
+            )
+        return APIResponse.not_found(
+            message="Estudiante no encontrado",
+            resource=f"Estudiante con ID {estudiante_id}"
+        )
     
-    def eliminar_estudiante(self, estudiante_id: int):
+    @classmethod
+    def eliminar_estudiante(cls, estudiante_id: int):
         """Eliminar un estudiante"""
-        # TODO: Implementar
-        pass
+        if cls._controller.eliminar_estudiante(estudiante_id):
+            return APIResponse.success(
+                message="Estudiante eliminado exitosamente"
+            )
+        return APIResponse.not_found(
+            message="Estudiante no encontrado",
+            resource=f"Estudiante con ID {estudiante_id}"
+        )
     
-    def buscar_por_carrera(self, carrera: str):
-        """Buscar estudiantes por carrera"""
-        # TODO: Implementar
-        pass
-    
-    def buscar_por_semestre(self, semestre: str):
-        """Buscar estudiantes por semestre"""
-        # TODO: Implementar
-        pass
+    @classmethod
+    def buscar_estudiantes(cls, criterios: dict):
+        """Buscar estudiantes por criterios"""
+        estudiantes = cls._controller.buscar_estudiantes(criterios)
+        serializer = EstudianteVinculacionSerializer(estudiantes, many=True)
+        return APIResponse.success(
+            data=serializer.data,
+            message=f"Se encontraron {len(estudiantes)} estudiantes"
+        )
